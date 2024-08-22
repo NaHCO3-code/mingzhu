@@ -26,9 +26,22 @@ export abstract class MTragger {
     this.callbacks.delete(sym);
   }
 
+  callback(){
+    this.callbacks.forEach((cb, key) => {
+      cb.callback();
+      if(cb.once){
+        this.removeEventListener(key);
+      }
+    });
+  }
+
+  static inited: boolean = false;
+
   static traggers: MTragger[] = [];
 
   static init(){
+    if(MTragger.inited) return;
+    MTragger.inited = true;
     setInterval(() => {
       MTragger.traggers.forEach((tragger, index) => {
         tragger.onObserve();
@@ -54,12 +67,7 @@ export class MTimeTragger extends MTragger {
 
   onObserve(){
     if(this.timeline.currentTime >= this.time){
-      this.callbacks.forEach((cb, key) => {
-        cb.callback();
-        if(cb.once){
-          this.removeEventListener(key);
-        }
-      });
+      this.callback();
       this.state = TraggerState.Tragged;
     }
   }
